@@ -1093,24 +1093,51 @@ class pikoe_GUI(QWidget,):
     def ivar_changed(self,):
         string =  self.widget_dict['IVAR'].currentText() 
         ivar_val = int(string.split(':')[0])
-        if ivar_val==1:
-            self.widg_L11L12.setEnabled(True)
-            self.widg_L13_15.setEnabled(True)
-        elif ivar_val==2:
-            self.widg_L11L12.setEnabled(True)
-            self.widg_L13_15.setEnabled(True) 
-        elif ivar_val==3:
-            self.widg_L11L12.setEnabled(True)
-            self.widg_L13_15.setEnabled(True) 
+        widgets_L11_12 = [ self.widget_dict['IVVAR'],  
+          self.widget_dict['VARMIN'],
+          self.widget_dict['VARMAX'],
+          self.widget_dict['DVAR'],
+          self.widget_dict['IVTHX'],  
+          self.widget_dict['THXMIN'],
+          self.widget_dict['THXMAX'],
+          self.widget_dict['DTHX'] ] 
+        widgets_L13_15 = [  self.widget_dict['IVPHX'],  
+          self.widget_dict['PHXMIN'],
+          self.widget_dict['PHXMAX'],
+          self.widget_dict['DPHX'],
+          self.widget_dict['IVET2'],  
+          self.widget_dict['ET2MIN'],
+          self.widget_dict['ET2MAX'],
+          self.widget_dict['DET2'],
+          self.widget_dict['IVPH2'],  
+          self.widget_dict['PH2MIN'],
+          self.widget_dict['PH2MAX'],
+          self.widget_dict['DPH2'] ] 
+        if ivar_val in [1,2,3]:
+            for item in widgets_L11_12:
+                item.setEnabled(True) 
+            for item in widgets_L13_15:
+                item.setEnabled(True)  
+               
         elif ivar_val==9:
-            self.widg_L11L12.setEnabled(True)
-            self.widg_L13_15.setEnabled(False)  
-        elif ivar_val in [14,24,34,44]: #ecternal file 
-            self.widg_L11L12.setEnabled(False)
-            self.widg_L13_15.setEnabled(False)   
+            for item in widgets_L11_12:
+                item.setEnabled(True) 
+            for item in widgets_L13_15:
+                item.setEnabled(False)  
+                
+        elif ivar_val in [14,24,34,44]: #external file 
+            for item in widgets_L11_12:
+                item.setEnabled(False) 
+            for item in widgets_L13_15:
+                item.setEnabled(False)  
             self.set_filename(target_var_name='IVAR')
         return 
+ 
     
+     
+    
+    
+ 
     def ish_changed(self,):
         string =  self.widget_dict['ISH'].currentText() 
         ish_val = int(string.split(':')[0])
@@ -1152,6 +1179,9 @@ class pikoe_GUI(QWidget,):
                     default_filename,
                     "All Files (*)",
                     options=options)
+            #Cancel returns None 
+            #if file exist, ask whether to change it. 
+            #  --> if cancel, at this moment, no change occurs. 
         #----open old file 
         elif fstate in ['old']:
             fileName, _filter = QFileDialog.getOpenFileName(self,
@@ -1159,6 +1189,7 @@ class pikoe_GUI(QWidget,):
                     default_filename,
                     "All Files (*)",
                     options=options)
+            print(fileName)
         #---store the data in pikoe
         #   because of length limit, it have to be relative path 
         if fileName:
@@ -1175,11 +1206,14 @@ class pikoe_GUI(QWidget,):
             # rel_path = f"{rel_path.as_posix()}" #fortran format         
             # self.pikoe_files[target_var_name][2] = './'+rel_path       
             #method2
-            base = os.path.dirname(self.pikoe_path)
-            target = os.path.dirname(fileName)
-            rel_path = Path(os.path.relpath(target,start=base))
+            base_dir = os.path.dirname(self.pikoe_path)
+            target_dir = os.path.dirname(fileName)
+            target_name = os.path.basename(fileName)
+            rel_path = Path(os.path.relpath(target_dir,start=base_dir))
             rel_path = f"{rel_path.as_posix()}" #fortran format
-            self.pikoe_files[target_var_name][2] = rel_path 
+            
+            self.pikoe_files[target_var_name][2] = rel_path+'/'+target_name  
+            print(self.pikoe_files[target_var_name][2])
             
         return self.pikoe_files[target_var_name][2]
         
