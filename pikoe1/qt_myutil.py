@@ -570,6 +570,7 @@ class ExpData_Dialog(QDialog,#uic.loadUiType("dialog_exp_data.ui")[0]
         self.label.setText(label_text)
         
         self.plainTextEdit = QPlainTextEdit()
+        self.plainTextEdit.setPlainText('# x  y  err')
         
         self.pushButton_clear = QPushButton('Clear')
         self.pushButton_clear.clicked.connect(self.clear_data)
@@ -579,9 +580,7 @@ class ExpData_Dialog(QDialog,#uic.loadUiType("dialog_exp_data.ui")[0]
             lambda: webbrowser.open('https://www-nds.iaea.org/exfor/'))
         
         self.pushButton_openfile = QPushButton('Load file')
-        self.pushButton_openfile.clicked.connect(
-         lambda:   QMessageBox.warning(self, '','Not available yet.')
-            )
+        self.pushButton_openfile.clicked.connect(self.load_file)
         self.buttonBox = QDialogButtonBox(
                  QDialogButtonBox.Ok | QDialogButtonBox.Cancel,parent=self)
         self.buttonBox.accepted.connect(self.take_data)
@@ -604,6 +603,19 @@ class ExpData_Dialog(QDialog,#uic.loadUiType("dialog_exp_data.ui")[0]
         self.layout.addWidget(self.pushButton_clear) 
         self.layout.addWidget(self.buttonBox) 
         
+    def load_file(self,):
+        options = QFileDialog.Options()
+        fileName, _filter = QFileDialog.getOpenFileName(self,
+                    "Open file",
+                    "",
+                    ",All Files (*);",
+                    options=options)
+        if fileName:
+            with open(fileName,'r') as f:
+                self.data = f.read()
+                self.plainTextEdit.setPlainText(self.data)
+        else:
+            return 
     def modify(self,data='',
                   label_text="Type of Data and Error",
                   SFresco_Input_object=None):  

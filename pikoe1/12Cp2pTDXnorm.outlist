@@ -19,7 +19,7 @@
           12C(p,2p)11B_gs@392MeV DWIA TDX normal            
 
    -- general inputs --
-        limfs ions ifrm imir ical        : 1000    0    0    0    0
+        limfs ions ifrm imir ical        : 1000    0    0    0    1
         zp ap za aa                      :      1.00   1.00782      6.00  12.00000
         ikin elab ictrein                :    0 392.00000    0
         ish ebind zsp asp betasp ictrm   :    1  15.96000      1.00   1.00782   0.85000    1
@@ -71,7 +71,7 @@
         betvg  gamvg  (v <-- g)      :  0.669130747314E+00  0.134563295942E+01
 
    -- integrated value of the calculated TDX --
-                0.00 ub
+               22.57 ub
       (cf. NN total cross section:  25.31 mb)
 
-                                              >>> calculation completed (     0.078 sec)
+                                              >>> calculation completed (    21.047 sec)

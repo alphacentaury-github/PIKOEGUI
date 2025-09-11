@@ -2,7 +2,7 @@
 """
 Created on Tue Aug 26 18:16:55 2025
 
-@author: User
+@author: Y.-H. Song(IRIS,IBS)
 """
 
 import sys
@@ -1407,7 +1407,8 @@ class pikoe_GUI(QWidget,):
             return     
         
         def exp_clicked():
-            dialog = qt_myutil.ExpData_Dialog(data=self.exp_data)
+            dialog = qt_myutil.ExpData_Dialog(
+                data=self.exp_data,label_text='Copy and Paste data')
             result = dialog.exec_() 
             if result==1: #yes             
                 self.exp_data =  dialog.data
