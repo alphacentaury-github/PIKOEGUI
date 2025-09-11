@@ -1,0 +1,73 @@
+     *****************************************************************
+     *****                                                       *****
+     *****                 program pikoe ver.1.0                 *****
+     *****                                                       *****
+     *****************************************************************
+
+
+   =============================================================
+        reaction:     1p  +  12C      at   392MeV/nucleon
+
+        particle 1:  1p   particle 2:  1p   particle B: 11B 
+   =============================================================
+
+     user's comment:
+          hello                                             
+
+   -- general inputs --
+        limfs ions ifrm imir ical        : 1000    0    0    0    1
+        zp ap za aa                      :      1.00   1.00782      6.00  12.00000
+        ikin elab ictrein                :    0 392.00000    0
+        ish ebind zsp asp betasp ictrm   :    1  15.96000      1.00   1.00782   0.85000    1
+        fj  fl sfac  nod kibbs           :      1.50      1.00      1.77    0    0
+
+        -vce-
+            v0ce rc ictrc a0c rcl ictrcl : not-fixed   1.35000    1   0.65000   1.35000    1
+        -vls-
+            v0ls rs ictrs as             :   8.20000   1.35000    1   0.65000
+
+        lmax0 lmax1 lmax2                :   60   60   60
+        ivar iex fkncut ixunt kunt       :    1    0   2.00000    1    1
+
+        ivt1l  t1lmin  t1lmax  dt1l      :    0 251.00000 255.00000  10.00000
+        ivth1l th1lmin th1lmax dth1l     :    0  32.50000 180.00000  10.00000
+        ivph1l ph1lmin ph1lmax dph1l     :    0   0.00000  40.00000  10.00000
+        ivth2l th2lmin th2lmax dth2l     :    1   0.00000 180.00000   0.50000
+        ivph2l ph2lmin ph2lmax dph2l     :    0 180.00000 360.00000  10.00000
+
+        kib: tbl out tmd  lg  px  tr  tl :   10    6    0    0    0    0    0
+        ielm kibelm ionsh kinelm ielmedg :    4   11    1    0    1
+        rmax  dr                         :  15.00000   0.10000
+        ng   for  r(b)  th  ph  k1  ph1  :   30   30   40    0    0
+
+        ipot0 facv0 facw0 facvs0 facws0  :   12   1.00000   1.00000   1.00000   1.00000
+              beta0 ims0  iedg0          :       -0.85000    0    1
+        ipot1 facv1 facw1 facvs1 facws1  :   13   1.00000   1.00000   1.00000   1.00000
+              beta1 ims1  iedg1          :       -0.85000    0    1
+        ipot2 facv2 facw2 facvs2 facws2  :   13   1.00000   1.00000   1.00000   1.00000
+              beta2 ims2  iedg2          :       -0.85000    0    1
+
+
+   -- bound-state calculation outputs --
+        binding energy               :  15.96000
+        central potential depth      :  54.34244
+        spin-orbit potential depth   :   8.20000
+
+   -- initial-channel kinematics outputs --
+        e0l t0l  fk0l                :   1330.78    392.00   4.77999
+        eal tal  fkal                :  11177.93      0.00   0.00000
+        e0  t0   fk0  fk0z           :   1263.25    324.47   4.28365   4.28365
+        ea  ta   fka  fkaz           :  11209.84     31.91   4.28365  -4.28365
+        e0v t0p  fk0v                :    938.78      0.00   0.00000
+        eav tap  fkav                :  15845.43   4667.50  56.91482
+
+   -- Lorentz factors  --
+        betgl  gamgl  (g <-- l)      :  0.754051693428E-01  0.100285515123E+01
+        betvl  gamvl  (v <-- l)      :  0.708774070749E+00  0.141756394126E+01
+        betvg  gamvg  (v <-- g)      :  0.669130747314E+00  0.134563295942E+01
+
+   -- integrated value of the calculated TDX --
+               23.31 ub
+      (cf. NN total cross section:  25.31 mb)
+
+                                              >>> calculation completed (    22.500 sec)
