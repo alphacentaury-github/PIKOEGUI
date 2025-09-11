@@ -55,7 +55,7 @@ from PyQt5.QtWidgets import (QApplication,QMainWindow,QDialog,QFileDialog,QWidge
                              QComboBox,QLabel,QLineEdit,QCheckBox,
                              QHBoxLayout,QVBoxLayout,QGridLayout,
                              QGroupBox,QToolBox,QTabWidget,QPushButton,QTextBrowser,
-                             QPlainTextEdit,QProgressBar,
+                             QPlainTextEdit,QProgressBar,QMessageBox,
                              QSpacerItem,QRadioButton)
 from PyQt5 import uic
 from PyQt5 import QtCore
@@ -72,7 +72,10 @@ from io import StringIO
 from subprocess import (call,Popen)
 
 import numpy as np
+import webbrowser
+
 import myutil
+
 # import reactions
 # import run_fresco_v2
 
@@ -544,7 +547,87 @@ class WidgetMatplot(QWidget,):
             ax.grid()
         self.add_plot(fig)
         return
-    
+
+#===========================================================================
+#---------------------------------------------------------------------------------------
+class ExpData_Dialog(QDialog,#uic.loadUiType("dialog_exp_data.ui")[0]
+                    ):    
+    """
+    This is a general dialog to get exp data 
+    with 
+    (1) QplainTextEdit
+    (2) description 
+    (3) load file button 
+    (3) Okay button     
+    """
+    def __init__(self,data=None,label_text="format description"):
+        super().__init__()
+        
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        #-----widgets 
+        self.label = QLabel(label_text)
+        self.label.setText(label_text)
+        
+        self.plainTextEdit = QPlainTextEdit()
+        
+        self.pushButton_clear = QPushButton('Clear')
+        self.pushButton_clear.clicked.connect(self.clear_data)
+        
+        self.pushButton_OpenEXFOR = QPushButton('Open EXFOR') 
+        self.pushButton_OpenEXFOR.clicked.connect(
+            lambda: webbrowser.open('https://www-nds.iaea.org/exfor/'))
+        
+        self.pushButton_openfile = QPushButton('Load file')
+        self.pushButton_openfile.clicked.connect(
+         lambda:   QMessageBox.warning(self, '','Not available yet.')
+            )
+        self.buttonBox = QDialogButtonBox(
+                 QDialogButtonBox.Ok | QDialogButtonBox.Cancel,parent=self)
+        self.buttonBox.accepted.connect(self.take_data)
+        self.buttonBox.rejected.connect(self.reject_data)
+        
+        #----initialize data 
+        if data:
+            self.data = data # string 
+            self.plainTextEdit.setPlainText(self.data) #show data 
+        else: 
+            self.data = self.plainTextEdit.toPlainText() 
+        # take care of the case without error     
+        self.data = myutil.add_error_to_datatext(self.data)
+        #-----------------
+        #----set display 
+        #-----------------
+        self.layout.addWidget(self.label) 
+        self.layout.addWidget(self.plainTextEdit) 
+        self.layout.addWidget(self.pushButton_openfile)
+        self.layout.addWidget(self.pushButton_clear) 
+        self.layout.addWidget(self.buttonBox) 
+        
+    def modify(self,data='',
+                  label_text="Type of Data and Error",
+                  SFresco_Input_object=None):  
+        self.data= data 
+        self.data= myutil.add_error_to_datatext(self.data)
+        self.plainTextEdit.setPlainText(self.data)
+        self.label.setText(label_text)   
+        
+
+    def get_values(self,): 
+        """ read textedit  """
+        self.data = self.plainTextEdit.toPlainText() 
+        return self.data 
+        
+    def take_data(self) :        
+        self.get_values() 
+        self.accept() # return 1
+        
+    def reject_data(self,):
+        self.data = None
+        self.reject()  # return 0 
+
+    def clear_data(self):
+        self.plainTextEdit.clear()    
        
 #============================================================================    
 class Widget_external(QWidget):

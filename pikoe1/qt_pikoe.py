@@ -177,7 +177,7 @@ class pikoe_GUI(QWidget,):
         
         self.pikoe_input = PIKOE_input() # input texts  
         self.pikoe_path = '' #executable file path 
-        
+        self.exp_data = None 
         #----list of files to run pikoe 
         self.pikoe_files = {
             'input'  : [100,'unknown','_test.cnt'], # runtime input # this is the reference path 
@@ -1058,12 +1058,12 @@ class pikoe_GUI(QWidget,):
            else:
                if ff[1] in ['old']:  
                    QMessageBox.warning(self, 'Warning: file path check', 
-               f"'{file_path}' does not exist. Check file location.")
+                   f"'{file_path}' does not exist. Check file location.")
                check = 1     
         return check 
     
     def change_L_check(self,state):
-        if state == Qt.Checked:
+        if state == Qt.Checked: #default values 
             self.widget_dict['LMAX0'].setEnabled(False)
             self.widget_dict['LMAX0'].setText('-90')
             self.widget_dict['LMAX1'].setEnabled(False)
@@ -1332,57 +1332,92 @@ class pikoe_GUI(QWidget,):
         """
         filename = self.pikoe_files['KIBTBL'][2] 
         data = np.loadtxt(filename,skiprows=1)
+        with open(filename,'r') as f:
+            labels = f.readline()
+        label_list = labels.split()
         
         mm = QWidget() 
         mm_layout = QVBoxLayout()
         mm.setLayout(mm_layout)
         
         widg_plot = qt_myutil.WidgetMatplot()
-        mm_layout.addWidget(widg_plot)
+        
         #---------------------------
         #-----test plot KIBTBL data 
         #---------------------------
-        btn1 = QPushButton('Plot')
-        btn2 = QPushButton('Exp. data')
+        btn_plot = QPushButton('Plot')
+        btn_exp = QPushButton('Exp. data')
+        btn_clear = QPushButton('Clear')
+        
+        exp_data = None 
+        list_of_data_to_plot = []
         
         colx = QComboBox()
-        colx.addItems(['0 : t1l[MeV]','1: th1l[deg]',
-                       '2 : ph1l[deg]','3 : t2l[MeV]',
-                       '4 : th2l[deg]','5 : ph2l[deg]',
-                       '6 : pbl[MeV/c]','7: thbl[deg]',
-                       '8 : phbl[deg]','9: pr[MeV/c]',
-                       '10: isol','11: tdx[ub/(MeVsr2)]','12 : Ay'])
+        colx.addItems(label_list)
         colx.setCurrentIndex(4)
         coly = QComboBox()
-        coly.addItems(['0 : t1l[MeV]','1: th1l[deg]',
-                       '2 : ph1l[deg]','3 : t2l[MeV]',
-                       '4 : th2l[deg]','5 : ph2l[deg]',
-                       '6 : pbl[MeV/c]','7: thbl[deg]',
-                       '8 : phbl[deg]','9: pr[MeV/c]',
-                       '10: isol','11: tdx[ub/(MeVsr2)]','12 : Ay'])
+        coly.addItems(label_list)
+        
         coly.setCurrentIndex(12)
         
-        widg_xy = combined_Widgets_horizontal([QLabel('Column x'),colx,
-                                    QLabel('Column y'),coly,btn2,btn1])
+        widg_x = combined_Widgets_horizontal([QLabel('Column x'),colx]  )
+        widg_y = combined_Widgets_horizontal([QLabel('Column y'),coly]  )
+        widg_xy = combined_Widgets_vertical([
+                    #QLabel('Column x'),colx,QLabel('Column y'),coly,
+                    widg_x,widg_y,
+                    btn_exp,btn_plot,btn_clear])
+        widg_all = combined_Widgets_horizontal([widg_plot,widg_xy]  ) 
         
+        #mm_layout.addWidget(widg_plot)
+        #mm_layout.addWidget(widg_xy)
+        mm_layout.addWidget(widg_all) 
         
-        mm_layout.addWidget(widg_xy)
-        
-        btn1.clicked.connect(lambda: btn1_clicked() )
-        btn2.clicked.connect(lambda: QMessageBox.about(
-                mm,'exp. data',
-                'Not available function yet.') )
-        
-        def btn1_clicked():
-            fig = plt.Figure()
-            ax = fig.add_subplot(111)
+        btn_plot.clicked.connect(lambda: plot_clicked() )
+        btn_exp.clicked.connect(lambda: exp_clicked() )
+        btn_clear.clicked.connect(lambda: clear_clicked() )
+                
+        def clear_clicked():
+            widg_plot.rm_plot()
+            widg_plot.add_plot(widg_plot.figure_default) 
+            return 
+                        
+        def plot_clicked():
             x = colx.currentIndex()
             y = coly.currentIndex()
-            ax.plot(data[:,x],data[:,y])
-            widg_plot.rm_plot() 
-            widg_plot.add_plot(fig) 
+            list_of_data_to_plot = []
+            list_of_data_to_plot.append({'x':data[:,x],'y':data[:,y],
+                                         'fmt': '-',
+                                         'label': coly.currentText() } )
+            if self.exp_data:
+                temp = myutil.add_error_to_datatext(self.exp_data)
+                exp_array = myutil.txt_to_array(temp) 
+                print('exp_data=',temp) 
+                list_of_data_to_plot.append({'x': exp_array[:,0] ,
+                                             'y': exp_array[:,1],
+                                             'yerr': exp_array[:,2],
+                                             'fmt': 'o',
+                                             'label': 'exp.data'})
+                
+            widg_plot.add_plot_by_data(
+                list_of_data_to_plot,
+                show_grid=False,yscale='linear',
+                xlabel=colx.currentText(),
+                ylabel=coly.currentText() )
+            
             return     
         
+        def exp_clicked():
+            dialog = qt_myutil.ExpData_Dialog(data=self.exp_data)
+            result = dialog.exec_() 
+            if result==1: #yes             
+                self.exp_data =  dialog.data
+                plot_clicked()
+            else:
+                self.exp_data = None 
+            return self.exp_data 
+            
+            
+                
         dialog = qt_myutil.CustomDialog(mm)
         dialog.exec_() 
         return 
