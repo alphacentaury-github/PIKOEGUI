@@ -38,7 +38,7 @@ import numpy as np
 import qt_myutil
 from qt_myutil import (combined_Widgets_horizontal,combined_Widgets_vertical,
                        combined_Widgets_grid,QLabel_aligned,
-                       text_Browser,WidgetMatplot,about_Dialog)
+                       text_Browser,WidgetMatplot)
 import myutil 
 from run_pikoe import *
 
@@ -1162,6 +1162,12 @@ class pikoe_GUI(QWidget,):
         #---store the data in pikoe
         #   because of length limit, it have to be relative path 
         if fileName:
+            try:
+                with open(fileName,'x') as f:
+                    f.write('')
+            except FileExistsError:
+                pass 
+            
             #method1
             # base = Path(self.pikoe_path).parent  
             # target = Path(fileName) 
@@ -1256,7 +1262,7 @@ class pikoe_GUI(QWidget,):
         check = self.check_pikoe_filepath(file_list)
         self.pikoe_input.set_data(HEADERS = file_list)
         if check!=0: 
-            print('Warning: check file paths')
+            QMessageBox.about(self,'pikoe run','Check file paths')
             return         
         self.check_pikoe_filepath(file_list)
         

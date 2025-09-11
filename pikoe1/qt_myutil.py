@@ -393,14 +393,14 @@ class text_Browser(QWidget,):
         elif self.browser_choice =='web':
             self.browser.setHtml(page_txt)
 #------------------------------------------------------------------------
-class about_Dialog(QDialog,uic.loadUiType("dialog_about.ui")[0]):
-    def __init__(self,label_text=None,text_type='html'):
-        super().__init__()
-        self.setupUi(self)
-        if label_text and text_type=='html':
-            self.textBrowser.setHtml(label_text)
-        elif label_text and text_type=='text':
-            self.textBrowser.setPlainText(label_text)
+#class about_Dialog(QDialog,uic.loadUiType("dialog_about.ui")[0]):
+#    def __init__(self,label_text=None,text_type='html'):
+#        super().__init__()
+#        self.setupUi(self)
+#        if label_text and text_type=='html':
+#            self.textBrowser.setHtml(label_text)
+#        elif label_text and text_type=='text':
+#            self.textBrowser.setPlainText(label_text)
 
 class CustomDialog(QDialog):
     """ 
