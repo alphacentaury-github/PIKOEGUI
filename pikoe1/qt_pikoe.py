@@ -1436,6 +1436,18 @@ if __name__ == "__main__":
             app = QApplication.instance()
 
         #myWindow = pikoe_GUI() #without menu 
+        app.setStyleSheet("""
+        QLabel {
+            font-size: 12pt;
+        }
+        QPushButton {
+            font-size: 12pt;
+        } 
+        QLineEdit {font-size : 12pt; }
+        QComboBox {font-size : 12pt; }
+        QCheckBox {font-size : 12pt; }
+        QTabWidget {font-size : 12pt; }
+        """)
         myWindow = MyWindow() # with menu 
         myWindow.show()
         app.exec_()
