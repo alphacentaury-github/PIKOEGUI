@@ -104,19 +104,25 @@ class all_global_variables() :
         return para_dict 
                 
 class dict_files():    
-    """more general purpose. assume simple text {key:value} """
-    def __init__(self,**kwarg):
+    """more general purpose to save/load dictionary. 
+       assume simple text {key:value} """
+    def __init__(self,file_name='.pikoe_gui',**kwarg):
         self.data = {} 
+        self.file_name = file_name 
         for item,value in kwarg.items():
             self.data[item] = value            
     def put_values(self,**kwarg):
         for item,value in kwarg.items():
             self.data[item] = value 
         return     
-    def save_to_file(self,file_name='.pikoe_gui'):
+    def save_to_file(self,file_name=None):
+        if file_name is None:
+            file_name = self.file_name 
         with open(file_name,'w') as file:
             json.dump(self.data,file,indent=4)
-    def load_from_file(self,file_name='.pikoe_gui'):
+    def load_from_file(self,file_name=None):
+        if file_name is None:
+            file_name = self.file_name 
         with open(file_name,'r') as file:
             self.data = json.load(file)
         return self.data     

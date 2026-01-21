@@ -50,6 +50,7 @@
      <string>Configure</string>
     </property>
     <addaction name="actionPath_pikoe"/>
+	<addaction name="actionPath_omget"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -78,6 +79,11 @@
   <action name="actionPath_fresco">
    <property name="text">
     <string>set Fresco_executable</string>
+   </property>
+  </action>
+  <action name="actionPath_omget">
+   <property name="text">
+    <string>set omget_executable</string>
    </property>
   </action>
   <action name="actionOpen">

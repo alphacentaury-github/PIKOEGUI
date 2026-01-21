@@ -52,12 +52,14 @@ class MyWindow(QMainWindow, uic.loadUiType("qt_pikoe_main.ui")[0]):
         self.setWindowTitle('PIKOE GUI')
         # data for main window
         self.gui_setting_path='.pikoe_gui'
-        self.path_data = myutil.dict_files(pikoe_path='./pikoe1/pikoe_windows.exe')
+        self.path_data = myutil.dict_files(pikoe_path='./pikoe1/pikoe_windows.exe',
+                                           omget_path='./pikoe1/omget_RIPL3/omget.exe')
         self.load_path_info()
         #---connect Menu action
         self.actionSave.triggered.connect(self.save_file)
         self.actionOpen.triggered.connect(self.open_file)
         self.actionPath_pikoe.triggered.connect(lambda: self.set_path('pikoe_path'))
+        self.actionPath_omget.triggered.connect(lambda: self.set_path('omget_path'))
         self.actionAbout.triggered.connect(self.show_about)
         self.actionDocumentation.triggered.connect(self.show_documents)
         self.actionBug_Report.triggered.connect(self.show_bugreport)
@@ -65,6 +67,7 @@ class MyWindow(QMainWindow, uic.loadUiType("qt_pikoe_main.ui")[0]):
         #---add Widgets
         self.pikoe = pikoe_GUI() 
         self.pikoe.pikoe_path = self.path_data.data['pikoe_path']
+        self.omget_path = self.path_data.data['omget_path']
         self.verticalLayout.addWidget(self.pikoe)
         self.show()  
         self.check_pikoe_path() 
