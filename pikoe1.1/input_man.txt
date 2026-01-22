@@ -1,0 +1,353 @@
+=== Header part ===
+
+The first line of the header part is a comment line; it will be disregarded.
+From the second line, you specify a unit number, its status, and a path of
+the external input file(s) by a fixed format "A1,I3,1X,A8,2X,A50", for example:
+  11:old     ::./input.dat
+  12:unknown ::./output.dat
+The unit number i should be 10<=i<=99. The specified file is opened as
+  open(11, file='./input.dat', status='old')
+  open(12, file='./output.dat', status='unknown')
+in this case. This is repeated until a unit number i<0 or i>=100 is given.
+One comment line should follow the header part.
+
+
+
+=== Main part ===
+
+The name of each input parameter, its format, and its meaning is described
+in the following. See also the samples of the input in the package.
+An ith line # (in the main input part) is denoted by Li.
+
+L1 : comment [a50]
+  comment     User's comment. Appears in outlist as it is.
+
+L2 : limfs ions ifrm imir ical [5i5]
+  limfs       Limit of size of output file (unit # = kibtbl) in unit of MB
+              If 0, replaced by 1000000 (roughly 1TB)
+              One line is estimated to be 128 bytes.
+  ions=0      No output for the configuration that is kinematically not allowed
+      <>0     Output for the configuration that is kinematically not allowed
+  ifrm=0      Kinematics/observable output given in the Laboratory frame (L)
+      =1                                            the c.m. frame (G)
+      =2                                            the Projectile-rest frame (V)
+  imir<>0     +z -> -z conversion in kinematics output
+  ical=0      Kinematics survey mode; observables not calculated
+      <>0     Observables calculated  
+
+L3 : zp ap za aa [f5.0,f10.0,f5.0,f10.0]
+  zp ap       Atomic # and mass (in u) of the probe (particle 0)
+  za aa       Atomic # and mass (in u) of the nucleus A to be broken
+
+L4 : ikin elab ictrein [i5,f10.0,i5]
+  ikin=0      Normal kinematics (probe is the projectile)
+      <>0     Inverse kinematics (nucleus to be broken is the projectile)
+  elab        Kinetic energy per nucleon of the projectile (in MeV)
+  ictrein=0   The total kinetic energy Ein of the projectile is calculated with
+              Ein = elab*nint(ap) or elab*nint(aa).
+         <>0  Ein = elab*ap or elab*aa is used.
+
+L5 : ish ebind zsp asp betasp ictrm [i5,f10.0,f5.0,2f10.0,i5]
+  ish=0       Depth (in MeV, >0) of s.p. pot. is specified by ebind.
+     =1       Depth of s.p. pot. is changed to reproduce the binding energy
+              given by ebind (in MeV, >0).
+     >9       S.p. wave function read from external file (unit # = ish)
+  ebind       Binding energy (in MeV, >0) of the struck nucleon (when ish=1 or ish>9)
+              When ish=0 and ibmc=0, regarded as the depth (in MeV) of the central
+              s.p. pot.
+              When ish=0 and ibmc<>0, it has no meaning.
+  zsp asp     Atomic # and mass (in u) of particle N to be struck
+  betasp      Range of nonlocality (in fm) for particle N in A (Perey-Buck correction)
+              If negative, the correction function is read from the external file
+              (unit # = ish); if ish<10, process is terminated.
+  ictrm       Mass parameter in the Sch. Eq. for the bound-state problem:
+              =1  Mass of particle N in A
+               2  Reduced mass
+
+L6 : fj fl sfac nod kibbs [2f5.0,f10.0,2i5]
+  fj fl       Total and orbital angular momenta of the s.p. state
+  sfac        Spectroscopic factor (maximum = 2*fj+1 for nucleon-knockout)
+  nod         # of nodes (0 for the lowest state)
+  kibbs       Unit # for the bound state wave function (BSWF) output
+              If kibbs > 0, R, BSWF(R), nonlocality correction function, and
+              corrected BSWF (normalized) are written.
+
+L7 : ibmc rc ictrc a0c rcl ictrcl [i5,f10.0,i5,2f10.0,i5]
+  ibmc=1      Bohr-Mottelson (BM) pot. used for central part
+              If ish>9 and betasp>0, ibmc must be 1.
+      <>1     Parameters read-in for central part
+  rc          Reduced radial parameter (in fm)
+  ictrc       Control of rc
+              =0: fac=aa^1/3
+               1: fac=(aa-asp)^1/3
+               2: fac=(aa-asp)^1/3 + asp^1/3
+               3: fac=1
+              The radial parameter is given by rc*fac.
+  a0c         Diffuseness parameter (in fm)
+  rcl         Reduced Coulomb radius (in fm)
+  ictrcl      Control of rcl (similar to ictrc)
+
+L8 : ibms v0ls rs ictrs as [i5,2f10.0,i5,f10.0]
+  ibms=1      BM pot. used for spin-orbit part
+      <>1     Parameters read-in for spin-orbit part
+  v0ls        Depth (in MeV, >0)
+  rs          Reduced radial parameter (in fm)
+  ictrs       Control of rs (similar to ictrc)
+  as          Diffuseness parameter (in fm)
+
+L9 : lmax0 lmax1 lmax2 [3i5]
+  lmaxi       Maximum orbital angular momentum for particle i (=0,1,2)
+              If negative, lmaxi=min( nint(K_i*R_max), |lmaxi| ) (automatic setting)
+
+L10: ivar iex fkncut ixunt kunt [2i5,f5.0,2i5]
+  [NOTE: Units of energy (T), angle (theta and phi), and wave number (K) are MeV, degree,
+         and fm^-1, respectively. These quantities must be given in the L-frame.]
+  ivar=1      T1, theta1, phi1, theta2, and phi2 controlled in
+              L11, L12, L13, L14, and L15, respectively
+              TDX with respect to T1, Omega1, and Omega2 calculated
+      =2      K_B, thetaB, phiB, theta2, and phi2 controlled in
+              L11, L12, L13, L14, and L15, respectively
+              TDX with respect to K_B, OmegaB, and Omega2 calculated
+      =3      T1, theta1, phi1, T2, and phi2 controlled in
+              L11, L12, L13, L14, and L15, respectively
+              QDX with respect to T1, Omega1, T2, phi2 calculated
+      =9      K_Bz in the A-frame controlled in L11 and
+              K_Bb in the A-frame controlled in L12
+              L13-L15 have no meaning.
+              MDs of nucleus B in the A-frame calculated
+      >9      Kinematics profile in the L-frame read from external file (unit # = ivar)
+              L11-L15 have no meaning.
+              (t1,th1,ph1,t2,th2,ph2,kb,thb,phb) to be given with 9f10.0
+               9 < ivar < 20: t1,th1,ph1,th2,ph2 used to evaluate the other 4
+                              TDX with respect to T1, Omega1, and Omega2 calculated
+              19 < ivar < 30: kb,thb,phb,th2,ph2 used to evaluate the other 4
+                              TDX with respect to K_B, OmegaB, and Omega2 calculated
+                              unit of kb controlled by kunt (see below)
+              29 < ivar < 40: t1,th1,ph1,t2,ph2 used to evaluate the other 4
+                              QDX with respect to T1, Omega1, T2, phi2 calculated
+              39 < ivar     : all of 9 used and energy-momentum cons. checked 
+                              TDX with respect to T1, Omega1, and Omega2 calculated
+                              unit of kb controlled by kunt (see below)
+  iex<>1      Particle 1 is particle 0
+     =1       Particle 1 is particle N in A in the initial state (not applicable when
+              ielm=4 or ielm=6)
+  fkncut      Cutoff for the missing momentum (in fm^-1)
+  ixunt       Control for the unit of cross section in output
+              =1 : micro barn
+              <>1: milli barn
+  kunt        Control for the unit of K_B in output
+              Also applied to external file for kinematics profile (unit # = ivar)
+              =0: fm^-1
+              =1: MeV/c
+              =2: GeV/c
+
+L11: ivvar varmin varmax dvar [i5,3f10.0]
+L12: ivthx thxmin thxmax dthx [i5,3f10.0]
+L13: ivphx phxmin phxmax dphx [i5,3f10.0]
+L14: ivet2 et2min et2max det2 [i5,3f10.0]
+L15: ivph2 ph2min ph2max dph2 [i5,3f10.0]
+  ivx=0       x (= var, thx, phx, et2, or ph2) is fixed at xmin
+     <>0      x varies from xmin to xmax with the increment dx
+
+L16: kib: tbl out tmd lg px tr tl [7i5]
+  kibtbl      Unit # for TDX or QDX table when ivar<>9     !!!
+              Unit # for momentum distribution in cylindrical representation with phiB=0
+              when ivar=9
+  kibout      Unit # for outlist file
+  kibtmd      Unit # for transition matrix density (when > 0)
+              Allowed only when single or no degree of freedom in kinematics is varied.
+              Not allowed when ielm=4 or 6.
+  kiblg       Unit # for longitudinal momentum distribution (when > 0)
+  kibpx       Unit # for p_x momentum distribution (when > 0)
+              if > 0, ivthx=1 and (thxmax-thxmin)/dthx+1 > 3 must be satisfied
+  kibtr       Unit # for transverse momentum distribution (when > 0)
+  kibtl       Unit # for total momentum distribution (when > 0)
+              if > 0, ivthx=1, (thxmax-thxmin)/dthx+1 > 3,
+                      ivvar=1, and (varmax-varmin)/dvar+1 > 3 must be satisfied
+[NOTE: kibtbl and kibout must be positive. kiblg, kibpx, kibtr, kibtl are effective
+       only when ivar=9. Trivially, all unit #s must be different from each other.]
+
+L17: ielm kibelm ionsh kinelm ielmedg [5i5]
+  ielm=0      Isotropic free NN cross section at elab (in mb)
+      =3      Free differential NN cross section (in mb/sr) read from external file
+              (unit # = kibelm) 
+      =4      Free (on-shell) NN t-matrix read from external file (unit # = kibelm) 
+              Available only when reaction is in coplanar (see below)
+  kibelm      Unit # of external file for elementary process (needed when ielm=3 or 4)
+  ionsh       Choice of on-shell approximation (needed when ielm=3 or 4)     
+       =1     Final-state prescription
+       =2     Initial-state prescription
+       =3     Energy-average prescription
+       =4     Momentum-average prescription
+  kinelm=1    Output for the kinematics of the elementary process
+              Always set to 0 when ivar=9
+        <>1   No output for the kinematics of the elementary process
+  ielmedg=0   If the scattering energy is out of the range prepared, 
+              the process is terminated.
+         <>0  If the scattering energy is out of the range prepared,
+              the value at the nearest energy (on an edge) is adopted.
+
+L18: rmax dr ngr ngth ngph ngk1 ngph1q [2f10.0,5i5]
+  rmax dr     Maximum and increment of radial coordinate R (in fm)
+     ngx      # of nodes for Gauss-Legendre quadratures for x=R, theta_R, phi_R, K1,
+              or phi_1Q
+              ng for K1 and phi_1Q effective only when ivar=9
+
+L19: ipot0 facv0 facw0 facvs0 facws0 beta0 ims0 iedg0 [i5,4f5.0,f10.0,2i5]
+L20: ipot1 facv1 facw1 facvs1 facws1 beta1 ims1 iedg1 [i5,4f5.0,f10.0,2i5]
+L21: ipot2 facv2 facw2 facvs2 facws2 beta2 ims2 iedg2 [i5,4f5.0,f10.0,2i5]
+  ipoti=0     Plane wave is used for particle i (=0,1,2).
+        1     If nucleon, Koning-Delaroche pot. (with Coulomb) is adopted for particle i.
+              If alpha, Avrigeanu pot. (with Coulomb) is adopted for particle i.  !!!
+       >9     Optical pot. for particle i is read from external file (unit # = ipoti);
+              it must cover the energy range appropriately.
+  facvi       Real part of central term multiplied by facvi
+              If negative, the Coulomb potential is turned off
+              and |facvi| is used as facvi.
+  facwi       Imaginary part of central term multiplied by facwi
+  facvsi      Real part of spin-orbit term multiplied by facvsi
+  facwsi      Imaginary part of spin-orbit term multiplied by facwsi
+  betai       Range of nonlocality (in fm) for particle i.
+              If negative, the correction function is read from the external file
+              (unit # = ipoti); if ipoti<10, process is terminated.
+  imsi=0      Reduced energy used as the kinematical factor
+      <>0     Reduced mass used as the kinematical factor
+  iedgi=0     If the scattering energy is out of the range prepared,
+              the process is terminated.
+       <>0    If the scattering energy is out of the range prepared,
+              the value at the nearest energy (on an edge) is adopted.
+
+
+
+=== Bound state wave function ===
+
+The bound state wave function is read from an external file of unit # = ish
+if ish>9.
+
+L1 : rspmax drsp [free]
+  rspmax      Maximum radius (in fm, must not be smaller than rmax)
+  drsp        Increment of radius (in fm, can be different from dr)
+
+L2-: rsp wfsp fnlspw (for rspmax/drsp+1 lines) [f10.0,2e20.12]
+  rsp         Radius (in fm)
+  wfsp        Radial wave function (in fm^{-3/2}, not multiplied by R)
+  fnlspw      Nonlocality correction function (effective only when betasp<0)
+
+
+
+=== Optical potential ===
+
+The optical potential is read from an external file of unit # = ipoti
+if ipoti>9 (i=0,1,2).
+
+L1 : nepmaxw rpmaxw drpw r0clw ictrclw [i5,3f10.0,i5]
+  nepmaxw     # of energy points
+  rpmaxw      Maximum radius (in fm, must not be smaller than rmax)
+  drpw        Increment of radius (in fm, can be different from dr)
+  r0clw       Reduced Coulomb radius (in fm)
+              If 0 and the Coulomb potential is not given (see below),
+              Koning-Delaroche's Coulomb radius is adopted.
+  ictrclw     Control of r0clw
+              =1: fac=(ax)^1/3
+               2: fac=(asc)^1/3 + ax^1/3
+               3: fac=1
+              ax : aa (for particle 0) or ab (for particle 1 and 2)
+              asc: Mass of particle 0, 1, or 2
+              The radial parameter is given by r0clw*fac.
+
+L2 : epw [free]
+  epw         Scattering energy (in MeV) in nucleus rest frame
+
+L3-: vpotw wpotw vlsw wlsw vcouw fnlwr fnlwi (for rpmaxw/drpw+1 lines) [7e20.12]
+  vpotw       Real central (in MeV)
+  wpotw       Imaginary central (in MeV)
+  vlsw        Real spin-orbit (in MeV)
+  wlsw        Imaginary spin-orbit (in MeV)
+  vcouw       Coulomb potential (in MeV)
+  fnlwr       Real nonlocality correction function (effective only when beta<0)
+  fnlwi       Imaginary nonlocality correction function (effective only when beta<0)
+
+Repeat "L2 L3-" for nepmaxw times. epw must be sorted in ascending order.
+
+
+
+=== Energy-dependent differential cross section of elementary process ===
+
+An energy-dependent differential cross section of the elementary process is read
+from an external file of unit # = kibelm if ielm=3.
+
+L1 : nennmax thnnmax dthnn [free]
+  nennmax     # of energy points
+  thnnmax     Maximum NN c.m. scattering angle (in deg.)
+  dthnn       Increment (in deg.)
+
+L2 : eelm [free]
+  eelm        NN scattering energy (in MeV, in NN laboratory frame)
+
+L3-: dsigpp dsigpn (for thnnmax/dthnn+1 lines) [free]
+  dsigpp      pp differential cross section (in mb/sr)
+  dsigpn      pn differential cross section (in mb/sr)
+
+Repeat "L2 L3-" for nennmax times. eelm must be sorted in ascending order.
+
+
+
+=== Transition amplitudes of elementary process with on-shell approximation ===
+
+Transition amplitudes of the elementary process with the on-shell approximation
+are read from an external file of unit # = kibelm if ielm=4. This option is limited
+for coplanar kinematics.
+
+L1 : q0mn q0mx dq0 [free]
+  q0mn   Minimum of the relative wave # (in 1/fm)
+  q0mx   Maximum of the relative wave # (in 1/fm)
+  dq0    Increment of the wave # (in 1/fm)
+
+L2 : th0mn th0mx thmn thmx dth [free]
+  th0mn  Minimum polar angle of the relative wave # in the initial state (in deg.)
+  th0mx  Maximum polar angle of the relative wave # in the initial state (in deg.)
+  thmn   Minimum polar angle of the relative wave # in the final state (in deg.)
+  thmx   Maximum polar angle of the relative wave # in the final state (in deg.)
+  dth    Increment of the polar angle (in deg., for both the initial and final states)
+
+[NOTE: ielm=4 is allowed only for reaction kinematics in coplanar.
+       Amplitudes with phi = 0, 180, and 360 deg. (azimuthal angle of the 
+       relative wave # in the initial and final states) have to be given. ]
+
+L3- : ampr ampi [free]
+  ampr      Real part of amplitude (in MeV fm^3)
+  ampi      Imaginary part of amplitude (in MeV fm^3)
+
+  Data are read as follows. They should be prepared accordingly.
+
+   do iq0 = 1,nq0mx (q0mn -- q0mx)
+    do ith0 = 1,ntht0 (th0mn -- th0mx)
+     do iph0 = 1,nphi0 (for 0, 180, 360 deg.)
+      do ith = 1,ntht (thmn -- thmx)
+       do iph = 1,nphi (for 0, 180, 360 deg.)
+        do ispin_0=1,2
+         do ispin_N=1,2
+          do ispin_1=1,2
+           do ispin_2=1,2
+
+            read(kibelm,*) ampr,ampi
+
+           end do
+          end do
+         end do
+        end do
+       end do 
+      end do 
+     end do 
+    end do 
+   end do 
+
+  spin_i=1 when the spin of particle i is up, =2 when down
+  x = 0: Particle 0
+    = N: Particle N to be struck (initial state)
+    = 1: Particle 1
+    = 2: Particle 2
+
+"L3" is repeated for nqmx*ntht0*3*ntht*3*16 times.
+
+

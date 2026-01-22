@@ -1,0 +1,9 @@
+
+Reference Number = 9605 Incident Particle: alpha   
+Target: Z= 20 A=  40 Number of energies=   1
+Type potential: spherical    non-dispersive               non-relativistic
+First Author: M.Avrigeanu   
+Z-Range=22- 22  A-Range= 45- 47  E-Range=   1.000-  50.000 MeV         Ef = -6.084
+
+En(MeV)     V    RV    AV    DWV      W    RW    AW     VD   RVD   AVD     WD   RWD   AWD    VSO   RVSO  AVSO   WSO   RWSO  AWSO   VHFpn WSpn DVSpn    WVpn    DVVpn   V(Lane)  W(Lane)    E
+100.000 73.269 1.480 0.485  0.000103.411 1.340 0.500  0.000 0.000 0.000  0.000 1.520 0.464  0.000 0.000 0.000  0.000 0.000 0.000
