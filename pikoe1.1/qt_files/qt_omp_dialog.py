@@ -196,13 +196,10 @@ class DialogOMP_GUI(QDialog,form_omp):
 #        (omp_id,omp_txt)= self.omp_list[self.listWidget.currentRow()]
             (omp_id,proj,ztmin,ztmanx,atmin,atmax,emin,emax,author,extra)= self.omp_list[self.listWidget.currentRow()-1]
             #---------call global_omp_get
-            #self.temp_para = global_omp_get(self.input['ap'],
-            #                self.input['zp'],self.input['at'],self.input['zt'],
-            #                self.input['elab'], omp_id,
-            #                omget_exe = omget_exe )
             self.temp_para = global_omp_get(self.input['ap'],
                             self.input['zp'],self.input['at'],self.input['zt'],
-                            self.input['elab'], omp_id)
+                            self.input['elab'], omp_id,
+                            omget_exe = omget_exe )
             if self.temp_para == {} or self.temp_para== 0 :
                 self.textBrowser.append('Something Wrong. Make sure set correct executable path..')
             else : 
