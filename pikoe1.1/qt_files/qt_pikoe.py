@@ -3,6 +3,19 @@
 Created on Tue Aug 26 18:16:55 2025
 
 @author: Y.-H. Song(IRIS,IBS)
+
+All path should be given as a relative path 
+where the python and fortran program is called,
+but when python file and fortran file is in different location,
+There is some issue about the relative path.  
+
+pikoe_GUI.pikoe_files : path are absolute path or relative to cwd path 
+pikoe_input['HEADERS'] : path must be relative to input file location 
+
+Thus, one have to be careful path between pikoe_files and 'HEADERS'.
+
+On the other hand, direct pikoe run assumes all path are relative to cwd(). 
+   
 """
 
 import sys
@@ -42,22 +55,32 @@ from qt_myutil import (combined_Widgets_horizontal,combined_Widgets_vertical,
 import myutil 
 from run_pikoe import *
 
+#---all path in this code is relative to this file location
+try:
+    here = os.path.dirname(os.path.realpath(__file__))
+except:
+    here = '.'
+
 #==============main window with menu===========================================
-class MyWindow(QMainWindow, uic.loadUiType("qt_pikoe_main.ui")[0]):
+class MyWindow(QMainWindow, uic.loadUiType(here+"/qt_pikoe_main.ui")[0]):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
         size = QSize(900,500)
         self.resize(size)
         self.setWindowTitle('PIKOE GUI')
+        
         # data for main window
         self.gui_setting_path='.pikoe_gui'
-        self.path_data = myutil.dict_files(pikoe_path='./pikoe1/pikoe_windows.exe',
-                                           omget_path='./pikoe1/omget_RIPL3/omget.exe')
+        self.path_data = myutil.dict_files(
+            pikoe_path='./pikoe1/pikoe_windows.exe',
+            omget_path='./pikoe1/omget_RIPL3/omget.exe')
         self.load_path_info()
         #---connect Menu action
         self.actionSave.triggered.connect(self.save_file)
         self.actionOpen.triggered.connect(self.open_file)
+        self.actionOpenCnt.triggered.connect(self.open_cnt_file) 
+        self.actionSaveCnt.triggered.connect(self.save_cnt_file)
         self.actionPath_pikoe.triggered.connect(lambda: self.set_path('pikoe_path'))
         self.actionPath_omget.triggered.connect(lambda: self.set_path('omget_path'))
         self.actionAbout.triggered.connect(self.show_about)
@@ -166,6 +189,54 @@ class MyWindow(QMainWindow, uic.loadUiType("qt_pikoe_main.ui")[0]):
             return
         return 
 
+    def open_cnt_file(self,):
+        """
+        read pikoe cnt file 
+        and put values into GUI 
+        """
+        options = QFileDialog.Options()
+        fileName, _filter = QFileDialog.getOpenFileName(self,
+                    "Open file",
+                    "",
+                    ",All Files (*);",
+                    options=options)
+        if fileName:
+            self.pikoe.pikoe_input.load_txt(fileName) 
+            print(self.pikoe.pikoe_input.data) 
+            
+            # self.pikoe.put_values(jj)
+            return #jj
+        else :
+            print('No file is chosen')
+            return
+        
+        return 
+    
+    def save_cnt_file(self,):
+        options = QFileDialog.Options()
+        fileName, _filter = QFileDialog.getSaveFileName(self,
+                    "Save file",
+                    "",
+                    ",All Files (*);",
+                    options=options)
+        para_dict   = self.pikoe.get_values() 
+        self.pikoe.pikoe_input.set_data(**para_dict)
+        file_list = self.pikoe.get_files() # file data settings 
+        check = self.pikoe.check_pikoe_filepath(file_list)
+        self.pikoe.pikoe_input.set_data(HEADERS = file_list)
+        
+        if fileName:
+            txt_input = self.pikoe.pikoe_input.write_txt() 
+            ff = open(fileName,'w')
+            ff.write(txt_input)
+            ff.close() 
+            print(f'{fileName} is written')
+            return 
+        else :
+            print('No file is chosen')
+            return
+        return 
+
 
     def show_about(self,):
         xxx = QLabel(
@@ -189,7 +260,7 @@ class pikoe_GUI(QWidget,):
         self.exp_data = None 
         #----list of files to run pikoe 
         self.pikoe_files = {
-            'input'  : [100,'unknown','../cnt/_test.cnt'], # runtime input # this is the reference path 
+            'input'  : [100,'unknown','../cnt/_test.cnt'], # runtime input # this is the reference path for all inputs # not the pikoe location
             'KIBTBL' : [10,'unknown','../tbl/tbl_12Cp2pTDXnorm.dat'], # table output
             'KIBOUT' : [6,'unknown','../outlist/12Cp2pTDXnorm.outlist'], # basic information output 
             'KIBELM' : [11,'old','../elem/nnampFL.dat'], #input elementary 
@@ -1063,6 +1134,7 @@ class pikoe_GUI(QWidget,):
     #==============Methods===============================================    
     def check_pikoe_filepath(self,file_list):
         #---check files exists  file_list is in pikoe_header form 
+        #---path in pikoe_header should be relative to input file location 
         check = 0 
         for ff in file_list:
            file_path = Path(ff[2])
@@ -1071,7 +1143,9 @@ class pikoe_GUI(QWidget,):
            else:
                if ff[1] in ['old']:  
                    QMessageBox.warning(self, 'Warning: file path check', 
-                   f"'{file_path}' does not exist. Check file location.")
+                   f"'{file_path}' does not exist. Check file location.\n"
+                   +"all path in the input file should be relative to the input file location.\n" 
+                   )
                check = 1     
         return check 
     
@@ -1178,7 +1252,7 @@ class pikoe_GUI(QWidget,):
     def set_filename(self,target_var_name=''):
         """ 
         get file path for target_var from user 
-        need to be relative path to pikoe executable file 
+        need to be relative path to pikoe input file 
         """
         options = QFileDialog.Options()
            
@@ -1301,6 +1375,9 @@ class pikoe_GUI(QWidget,):
         """ 
         convert GUI inputs input pikoe input text file 
         and run the pikoe. 
+        
+        Treat the pikoe input file location as 
+        the cwd ( reference of relative path)
         """
         self.get_values() 
         print('Warning! check the index/actual input consistency!!')
@@ -1309,7 +1386,7 @@ class pikoe_GUI(QWidget,):
         check = self.check_pikoe_filepath(file_list)
         self.pikoe_input.set_data(HEADERS = file_list)
         #if check!=0: 
-        #    QMessageBox.about(self,'pikoe run','Check file paths')
+        #    QMessageBox.about(self,'pikoe run','Check file paths. cnt file location is the cwd!')
         #    print(file_list)
         #    return         
         self.check_pikoe_filepath(file_list)
@@ -1325,6 +1402,7 @@ class pikoe_GUI(QWidget,):
         return 
     
     def load_pikoe_output(self,target_var):
+        """ load previous gui results""" 
         filename = self.pikoe_files[target_var][2] 
         with open(filename,'r') as ff:
             txt = ff.read() 

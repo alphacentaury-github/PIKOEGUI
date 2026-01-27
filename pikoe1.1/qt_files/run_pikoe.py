@@ -72,35 +72,7 @@ class PIKOE_input:
         ['{:<5d}{:<5g}{:<5g}{:<5g}{:<5g}{:<10g}{:<5d}{:<5d}',['IPOT1','FACV1','FACW1','FACVS1','FACWS1','BETA1','IMS1','IEDG1']],
         ['{:<5d}{:<5g}{:<5g}{:<5g}{:<5g}{:<10g}{:<5d}{:<5d}',['IPOT2','FACV2','FACW2','FACVS2','FACWS2','BETA2','IMS2','IEDG2']] 
         ]
-    
-    # default_format_variable_list_1_1 = [
-        # ['{:<5d}{:<5d}{:<5d}{:<5d}{:<5d}', ['LIMFS','IONS','IFRM','IMIR','ICAL']],
-        # ['{:<5.2f}{:<10g}{:<5.2f}{:<10g}',['ZP','AP','ZA','AA']],
-        # ['{:<5d}{:<10g}{:<5d}',['IKIN','ELAB','ICTREIN']],
-        # ['{:<5d}{:<10g}{:<5g}{:<10g}{:<10g}{:<5d}',['ISH','EBIND','ZSP','ASP','BETASP','ICTRM']],
-        # ['{:<5g}{:<5g}{:<10g}{:<5d}{:<5d}',['FJ','FL','SFAC','NOD','KIBBS']],
-        # ['{:<5d}{:<10g}{:<5d}{:<10g}{:<10g}{:<5d}',['IBMC','RC','ICTRC','A0C','RCL','ICTRCL']],
-        # ['{:<5d}{:<10g}{:<10g}{:<5d}{:<10g}',['IBMS','V0LS','RS','ICTRS','AS']],
-        # ['{:<5d}{:<5d}{:<5d}{:<5d}',['LMAX0','LMAX1','LMAX2','IEK']],
-        # ['{:<5d}{:<5d}{:<5g}{:<5d}{:<5d}',['IVAR','IEX','FKNCUT','IXUNT','KUNT']],
-        # ['{:<5d}{:<10g}{:<10g}{:<10g}',['IVVAR','VARMIN','VARMAX','DVAR']],
-        # ['{:<5d}{:<10g}{:<10g}{:<10g}',['IVTHX','THXMIN','THXMAX','DTHX']],
-        # ['{:<5d}{:<10g}{:<10g}{:<10g}',['IVPHX','PHXMIN','PHXMAX','DPHX']],
-        # ['{:<5d}{:<10g}{:<10g}{:<10g}',['IVET2','ET2MIN','ET2MAX','DET2']],
-        # ['{:<5d}{:<10g}{:<10g}{:<10g}',['IVPH2','PH2MIN','PH2MAX','DPH2']],
-        # ['{:<5d}{:<5d}{:<5d}{:<5d}{:<5d}{:<5d}{:<5d}{:<5d}',['KIBTBL','KIBOUT','KIBTMD','KIBLG','KIBPX','KIBTR','KIBTL','KIBMSK']],
-        # ['{:<5d}{:<5d}{:<5d}{:<5d}{:<5d}{:<5d}',['IELM','KIBELM','IONSH','KINELM','IELMEDG','KIBDEN']],
-        # ['{:<10g}{:<10g}{:<5d}{:<5d}{:<5d}{:<5d}{:<5d}',['RMAX','DR','NGR','NGTH','NGPH','NGK1','NGPH1Q']],
-        # ['{:<5d}{:<5g}{:<5g}{:<5g}{:<5g}{:<10g}{:<5d}{:<5d}{:<5d}',
-         # ['IPOT0','FACV0','FACW0','FACVS0','FACWS0','BETA0','IMS0','IEDG0','LSCA0']],
-        # ['{:<5d}{:<5g}{:<5g}{:<5g}{:<5g}{:<10g}{:<5d}{:<5d}{:<5d}',
-         # ['IPOT1','FACV1','FACW1','FACVS1','FACWS1','BETA1','IMS1','IEDG1','LSCA1']],
-        # ['{:<5d}{:<5g}{:<5g}{:<5g}{:<5g}{:<10g}{:<5d}{:<5d}{:<5d}',
-         # ['IPOT2','FACV2','FACW2','FACVS2','FACWS2','BETA2','IMS2','IEDG2','LSCA2']],
-        # ['{:<10f}{:<10f}',['DETBL', 'DATBL']] #???
-        # ]
-    
-    
+        
     def __init__(self):
         #---default values 
         self.data = { 
@@ -218,6 +190,7 @@ def run_pikoe_from_input_txt(pikoe_input_txt,
             print('Error removing tempoary files')
     print("Be careful that the pikoe_path and input_path to be absolute or cwd")
     print("input path will be cwd for relative path. ")
+    
     #----Assume pikoe file and cnt file are located at the root folder of pikoe 
     root_path = Path(pikoe_input_path).parent 
     
@@ -226,7 +199,9 @@ def run_pikoe_from_input_txt(pikoe_input_txt,
     ff.write(pikoe_input_txt)
     ff.close() 
     print('running pikoe at {}'.format(str(root_path)) )
-    #---------
+    #------Making the cwd to be the input file path 
+    #------all path should be relative to the input file location
+    #------Not the pikoe file location or starting command location
     proc = Popen(pikoe_path +" < "+ str(Path(pikoe_input_path).name)
                  ,stdout=subprocess.PIPE,
                  cwd = str(root_path)
