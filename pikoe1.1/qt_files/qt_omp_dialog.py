@@ -71,14 +71,14 @@ import qt_myutil
 #import reactions
 from omget_RIPL3.omget import (global_omp_choose,global_omp_get)
 
-form_omp = uic.loadUiType("dialog_omp.ui")[0]
-#omget_path = 'omget_RIPL3'
 #---current path where this file resides
-#try:
-#    here = os.path.dirname(os.path.realpath(__file__))
-#except:
-#    here = '.'
+#---all path in this code is relative to this file location
+try:
+    here = os.path.dirname(os.path.realpath(__file__))
+except:
+    here = '.'
 
+form_omp = uic.loadUiType(here+"/"+"dialog_omp.ui")[0]
 
 element_names = ["n","H","He","Li","Be","B","C","N","O","F","Ne","Na","Mg","Al","Si","P","S","Cl",
 		 "Ar","K","Ca","Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu","Zn","Ga","Ge","As","Se",
@@ -108,9 +108,8 @@ class DialogOMP_GUI(QDialog,form_omp):
         self.test_widget.list_of_Widgets[-1].clicked.connect(self.get_pot_tbl)
         
         #-----set path data
-        #self.path_data = myutil.all_global_variables()
         self.path_data = myutil.dict_files()
-        self.path_data.load_from_file()
+        self.path_data.load_from_file() # this use absolute path 
         #--dictionary
         self.input= {'ap':ap,'at':at,'zp':zp,'zt':zt,'elab':elab,
                      'omp_id': 0 ,'omp_para': {'rc':0.0} }
@@ -183,7 +182,8 @@ class DialogOMP_GUI(QDialog,form_omp):
 
     def update(self,):
         # file name of omeget executable
-        omget_exe = self.path_data.data["omget_path"]
+        omget_exe = self.path_data.data["omget_path"] #absolute path 
+        print('omget_exe_path=', omget_exe)
         self.temp_para = {}
         if self.omp_list == []:
 #            self.textBrowser.append("ERROR")
@@ -193,13 +193,20 @@ class DialogOMP_GUI(QDialog,form_omp):
             self.textBrowser.append("Select the correct OMP list !")
         else:
             self.textBrowser.clear()
-#        (omp_id,omp_txt)= self.omp_list[self.listWidget.currentRow()]
+
             (omp_id,proj,ztmin,ztmanx,atmin,atmax,emin,emax,author,extra)= self.omp_list[self.listWidget.currentRow()-1]
             #---------call global_omp_get
             self.temp_para = global_omp_get(self.input['ap'],
                             self.input['zp'],self.input['at'],self.input['zt'],
                             self.input['elab'], omp_id,
                             omget_exe = omget_exe )
+<<<<<<< Updated upstream
+=======
+            #---if trouble, try this and check the omget_path  
+            #self.temp_para = global_omp_get(self.input['ap'],
+            #                self.input['zp'],self.input['at'],self.input['zt'],
+            #                self.input['elab'], omp_id)
+>>>>>>> Stashed changes
             if self.temp_para == {} or self.temp_para== 0 :
                 self.textBrowser.append('Something Wrong. Make sure set correct executable path..')
             else : 
