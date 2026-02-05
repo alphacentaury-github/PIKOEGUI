@@ -200,13 +200,10 @@ class DialogOMP_GUI(QDialog,form_omp):
                             self.input['zp'],self.input['at'],self.input['zt'],
                             self.input['elab'], omp_id,
                             omget_exe = omget_exe )
-<<<<<<< Updated upstream
-=======
             #---if trouble, try this and check the omget_path  
             #self.temp_para = global_omp_get(self.input['ap'],
             #                self.input['zp'],self.input['at'],self.input['zt'],
             #                self.input['elab'], omp_id)
->>>>>>> Stashed changes
             if self.temp_para == {} or self.temp_para== 0 :
                 self.textBrowser.append('Something Wrong. Make sure set correct executable path..')
             else : 
