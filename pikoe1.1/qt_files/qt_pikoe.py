@@ -94,7 +94,7 @@ class MyWindow(QMainWindow, uic.loadUiType(here+"/qt_pikoe_main.ui")[0]):
         self.omget_path = self.path_data.data['omget_path']
         self.verticalLayout.addWidget(self.pikoe)
         self.show()  
-        self.check_pikoe_path() 
+        self.check_path_data() 
 
     def show_documents(self,):
         webbrowser.open('https://www.sciencedirect.com/science/article/pii/S0010465523004034',new=2 )
@@ -105,34 +105,49 @@ class MyWindow(QMainWindow, uic.loadUiType(here+"/qt_pikoe_main.ui")[0]):
         return 
 
     def open_omp(self,):
+        """ 
+        open optical potential dialog 
+        """
         from qt_omp_dialog import DialogOMP_GUI
         dlg = DialogOMP_GUI(4,2,40,20,100.)
         dlg.exec_() 
+        print('TO DO: saving potential as pikoe input ')
         return 
 
     def load_path_info(self,):
-        # try load path information 
+        """
+        # try read path info from file '.pikoe_gui',
+        if failed, create '.pikoe_gui' file 
+        """
         try:
             self.path_data.load_from_file(self.gui_setting_path)
         except:
             # if file does not exist, create
             self.path_data.save_to_file(self.gui_setting_path)
         
-    def check_pikoe_path(self,):
+    def check_path_data(self,):
+        """ 
+        check pikoe executable file path
+        """
         #---check pikoe_path 
-        file_path = Path(self.path_data.data['pikoe_path'])
-        if file_path.is_file():
-            pass 
-        else:
-            QMessageBox.warning(self, 'Warning: pikoe path check', 
-                f"'{file_path}' does not exist. Please set pikoe location in Configure Menu")            
-            print(f"'{file_path}' is not an existing file or does not exist.")
+        warn_txt =''
+        for key in self.path_data.data.keys():
+            file_path = Path(self.path_data.data[key])
+            if file_path.is_file():
+                pass 
+            else:
+                warn_txt += f"'{file_path}' does not exist.\n"
+        if warn_txt:
+            QMessageBox.warning(self, 'Warning: path check', 
+                warn_txt+"Please set path in Configure Menu.\no ")
         return 
 
     def set_path(self,option='pikoe_path'):
         """
         set path for executables 
         possibly later change it to cover other path
+        
+        option argument can be pikoe_path, omget_path 
         """
         options = QFileDialog.Options()
         #options |= QFileDialog.DontUseNativeDialog
@@ -143,12 +158,12 @@ class MyWindow(QMainWindow, uic.loadUiType(here+"/qt_pikoe_main.ui")[0]):
         if fileName:
             self.path_data.put_values(**{ option:  fileName})
             self.path_data.save_to_file(self.gui_setting_path) #save gui settings 
-            if option=='pikoe_path': #--executable of pikoe path 
+            if option=='pikoe_path': #--transfer information to pikoe_gui
                 self.pikoe.pikoe_path = fileName 
 
     def save_file(self,):
         """
-        To save/load all reaction calculation
+        To save/load gui information as json file.
         """
         options = QFileDialog.Options()
         fileName, _filter = QFileDialog.getSaveFileName(self,
@@ -156,12 +171,13 @@ class MyWindow(QMainWindow, uic.loadUiType(here+"/qt_pikoe_main.ui")[0]):
                     "",
                     ",All Files (*);",
                     options=options)
-        para_dict   = self.pikoe.get_values() 
+        para_dict  = self.pikoe.get_values() # all parameters 
+        files_dict = self.pikoe.pikoe_files 
         if fileName:
-            #>> json
-            jj = json.dumps(para_dict,indent=2)
+            #>> json            
             ff = open(fileName,'w')
-            ff.write(jj)
+            texts = json.dumps({'para' : para_dict, 'files' :files_dict}   ,indent=2)
+            ff.write(texts)
             ff.close()
             return para_dict
         else :
@@ -170,7 +186,7 @@ class MyWindow(QMainWindow, uic.loadUiType(here+"/qt_pikoe_main.ui")[0]):
 
     def open_file(self,):
         """
-        To save/load all reaction calculation
+        To save/load gui information as json file
         """
         options = QFileDialog.Options()
         fileName, _filter = QFileDialog.getOpenFileName(self,
@@ -181,9 +197,10 @@ class MyWindow(QMainWindow, uic.loadUiType(here+"/qt_pikoe_main.ui")[0]):
         if fileName:
             #>> json
             with open(fileName,"r") as ff:
-                jj = json.load(ff)
-            self.pikoe.put_values(jj)
-            return jj
+                all_dict = json.load(ff)
+            self.pikoe.put_values(all_dict['para'])
+            self.pikoe_files = all_dict['files']
+            return all_dict['para'] 
         else :
             print('No file is chosen')
             return
@@ -201,16 +218,96 @@ class MyWindow(QMainWindow, uic.loadUiType(here+"/qt_pikoe_main.ui")[0]):
                     ",All Files (*);",
                     options=options)
         if fileName:
-            self.pikoe.pikoe_input.load_txt(fileName) 
-            print(self.pikoe.pikoe_input.data) 
+            input_data = self.pikoe.pikoe_input.load_txt(fileName) #cnt file read 
+            gui_dict_out, gui_files_out = self.convert_input_to_gui(input_data, 
+                            self.pikoe.pikoe_files,fileName)
+            print(input_data) 
+            print(gui_dict_out)
+            print(gui_files_out)
+            #--before doing this one needs to check file path 
             
-            # self.pikoe.put_values(jj)
+            #--replace into gui data 
+            self.pikoe.data = gui_dict_out
+            self.pikoe.pikoe_files = gui_files_out
+            #self.pikoe.pikoe_files['input'][2] = fileName # now use cnt file instead of _test.cnt 
+            self.pikoe.loading_from_cnt = True  
+            self.pikoe.put_values(gui_dict_out)
+            self.pikoe.loading_from_cnt = False 
             return #jj
         else :
             print('No file is chosen')
             return
         
         return 
+    
+    def convert_input_to_gui(self,input_data, gui_files_template,fileName):
+        """ 
+        convert 'cnt' file into gui. 
+        """
+        cnt_dir = os.path.dirname(fileName)
+        def resolve_file_path(original_path, cnt_file_dir):
+            """
+            Checks if path exists. If not, tries a path relative to the .cnt file's location.
+            """
+            # 1. Check path as provided in input_data
+            if os.path.exists(original_path):
+                return original_path
+            
+            # 2. Try resolving relative to the .cnt file's directory
+            alt_path = os.path.join(cnt_file_dir, original_path)
+            if os.path.exists(alt_path):
+                return os.path.normpath(alt_path)
+            
+            # 3. Fallback to original if neither exists
+            return original_path
+        # 1. Create gui_para (all values from input_data as strings)
+        gui_para = {k: str(v) for k, v in input_data.items() if k != 'HEADERS'}
+        
+        # 2. Map unit numbers to file paths from input_data['HEADERS']
+        # Format: {unit_number: file_path}
+        path_lookup = {item[0]: item[2] for item in input_data.get('HEADERS', [])}
+        
+        # 3. Apply the conditional logic for gui_para values
+        ivar = input_data.get('IVAR', 0)
+        
+        # Conditions 1-9 (Unit changes)
+        if input_data.get('ISH', 0) > 9: gui_para['ISH'] = '12'
+        if input_data.get('IELM') in [3, 4]: gui_para['KIBELM'] = '11'
+        if input_data.get('IPOT0', 0) > 9: gui_para['IPOT0'] = '20'
+        if input_data.get('IPOT1', 0) > 9: gui_para['IPOT1'] = '21'
+        if input_data.get('IPOT2', 0) > 9: gui_para['IPOT2'] = '22'
+        if input_data.get('KIBBS', 0) > 0: gui_para['KIBBS'] = '13'
+        if input_data.get('KIBOUT', 0) > 0: gui_para['KIBOUT'] = '6'
+        if input_data.get('KIBTBL', 0) > 0: gui_para['KIBTBL'] = '10'
+        if input_data.get('KIBTMD', 0) > 0: gui_para['KIBTMD'] = '15'
+        
+        # Conditions 10-13 (IVAR=9 dependencies)
+        if ivar == 9:
+            if input_data.get('KIBLG', 0) > 0: gui_para['KIBLG'] = '16'
+            if input_data.get('KIBPX', 0) > 0: gui_para['KIBPX'] = '17'
+            if input_data.get('KIBTR', 0) > 0: gui_para['KIBTR'] = '18'
+            if input_data.get('KIBTL', 0) > 0: gui_para['KIBTL'] = '19'
+    
+        # Conditions 14-17 (IVAR ranges)
+        if 9 < ivar < 20: gui_para['IVAR'] = '14'
+        elif 19 < ivar < 30: gui_para['IVAR'] = '24'
+        elif 29 < ivar < 40: gui_para['IVAR'] = '34'
+        elif ivar > 39: gui_para['IVAR'] = '44'
+    
+        # 4. Update gui_files paths while KEEPING template unit numbers
+        # We copy the template so we don't modify the original
+        new_gui_files = {k: list(v) for k, v in gui_files_template.items()}
+        
+        for key in new_gui_files:
+            # Check if this file key exists in the input_data (e.g., 'KIBBS': 30)
+            if key in input_data:
+                original_unit = input_data[key]
+                # If that unit number has a path in HEADERS, update the filename in gui_files
+                if original_unit in path_lookup:
+                    #new_gui_files[key][2] = path_lookup[original_unit]
+                    new_gui_files[key][2] = resolve_file_path(path_lookup[original_unit], cnt_dir) 
+    
+        return gui_para, new_gui_files
     
     def save_cnt_file(self,):
         options = QFileDialog.Options()
@@ -221,7 +318,7 @@ class MyWindow(QMainWindow, uic.loadUiType(here+"/qt_pikoe_main.ui")[0]):
                     options=options)
         para_dict   = self.pikoe.get_values() 
         self.pikoe.pikoe_input.set_data(**para_dict)
-        file_list = self.pikoe.get_files() # file data settings 
+        file_list = self.pikoe.to_pikoe_header_files() # pikoe.file_list into header file form 
         check = self.pikoe.check_pikoe_filepath(file_list)
         self.pikoe.pikoe_input.set_data(HEADERS = file_list)
         
@@ -258,6 +355,7 @@ class pikoe_GUI(QWidget,):
         self.pikoe_input = PIKOE_input() # input texts  
         self.pikoe_path = '' #executable file path 
         self.exp_data = None 
+        self.loading_from_cnt = False 
         #----list of files to run pikoe 
         self.pikoe_files = {
             'input'  : [100,'unknown','../cnt/_test.cnt'], # runtime input # this is the reference path for all inputs # not the pikoe location
@@ -359,7 +457,7 @@ class pikoe_GUI(QWidget,):
         self.widget_dict['ISH'] = QComboBox() 
         self.widget_dict['ISH'].addItems(['0: fixed Depth',
                                           '1: Adjust Depth',
-                                          '11: External file'])
+                                          '12: External file'])
         self.widget_dict['ISH'].setCurrentIndex(1)
         self.widget_dict['ISH'].setToolTip(
           """  ish=0       Depth (in MeV, >0) of s.p. pot. is specified by ebind.
@@ -415,7 +513,7 @@ class pikoe_GUI(QWidget,):
             """nod         # of nodes (0 for the lowest state)""")
         
         self.widget_dict['KIBBS'] = QComboBox() # QLineEdit('0') #change into ComboBox !! 
-        self.widget_dict['KIBBS'].addItems(['0 : no','1: output'])
+        self.widget_dict['KIBBS'].addItems(['0 : no','13 : output'])
         self.widget_dict['KIBBS'].setCurrentIndex(0)
         self.widget_dict['KIBBS'].setToolTip(
             """  kibbs       Unit # for the bound state wave function (BSWF) output
@@ -1141,12 +1239,12 @@ class pikoe_GUI(QWidget,):
            if file_path.is_file():
                pass  
            else:
-               if ff[1] in ['old']:  
+               if ff[1] in ['old']:  # file not found 
                    QMessageBox.warning(self, 'Warning: file path check', 
                    f"'{file_path}' does not exist. Check file location.\n"
-                   +"all path in the input file should be relative to the input file location.\n" 
+                   +"Note: current working directory will be the cnt file location.\n" 
                    )
-               check = 1     
+                   check = 1    
         return check 
     
     def change_L_check(self,state):
@@ -1259,8 +1357,14 @@ class pikoe_GUI(QWidget,):
         fstate = self.pikoe_files[target_var_name][1] 
         default_filename = self.pikoe_files[target_var_name][2] 
         default_filename = str(Path(self.pikoe_path).parent) +'/'+default_filename
+        
+        #----get file name 
+        if self.loading_from_cnt :
+            print('loading from cnt file. no QFileDialog open')
+            fileName = default_filename
         #----get new file path 
-        if fstate in ['new','unknown']:
+        else: 
+          if fstate in ['new','unknown']:
             fileName, _filter = QFileDialog.getSaveFileName(self,
                     "set filename",
                     default_filename,
@@ -1270,7 +1374,7 @@ class pikoe_GUI(QWidget,):
             #if file exist, ask whether to change it. 
             #  --> if cancel, at this moment, no change occurs. 
         #----open old file 
-        elif fstate in ['old']:
+          elif fstate in ['old']:
             fileName, _filter = QFileDialog.getOpenFileName(self,
                     "set filename",
                     default_filename,
@@ -1280,6 +1384,7 @@ class pikoe_GUI(QWidget,):
         #---store the data in pikoe
         #   because of length limit, it have to be relative path 
         if fileName:
+            #---create empty files
             try:
                 with open(fileName,'x') as f:
                     f.write('')
@@ -1351,7 +1456,7 @@ class pikoe_GUI(QWidget,):
             else: #other widgets are skipped
                 pass
             
-    def get_files(self,):
+    def to_pikoe_header_files(self,):
         """ 
         convert GUI pikoe_files into file control form of pikoe input 
         """
@@ -1382,18 +1487,22 @@ class pikoe_GUI(QWidget,):
         self.get_values() 
         print('Warning! check the index/actual input consistency!!')
         self.pikoe_input.set_data(**self.data) 
-        file_list = self.get_files() # file data settings     
+        file_list = self.to_pikoe_header_files() # file data settings     
         check = self.check_pikoe_filepath(file_list)
+        if check==1:
+            QMessageBox.about(self,'pikoe run','Error: Please check paths in GUI or cnt file.')
+            return 
         self.pikoe_input.set_data(HEADERS = file_list)
         #if check!=0: 
         #    QMessageBox.about(self,'pikoe run','Check file paths. cnt file location is the cwd!')
         #    print(file_list)
         #    return         
-        self.check_pikoe_filepath(file_list)
-        
+       
         txt_input = self.pikoe_input.write_txt() 
         print(txt_input) 
-        QMessageBox.about(self,'pikoe run','Starting Pikoe. Please press Ok and wait')
+        QMessageBox.about(self,'pikoe run',
+                          'Starting Pikoe. Please press Ok and wait\n'
+                          +f" Note that all output will be at path w.r.t. {self.pikoe_files['input'][2]} ")
         output,err = run_pikoe_from_input_txt(txt_input,pikoe_path=self.pikoe_path,
                pikoe_input_path=self.pikoe_files['input'][2])
         QMessageBox.about(self,'pikoe run',
@@ -1403,8 +1512,13 @@ class pikoe_GUI(QWidget,):
     
     def load_pikoe_output(self,target_var):
         """ load previous gui results""" 
-        filename = self.pikoe_files[target_var][2] 
-        with open(filename,'r') as ff:
+        cnt_file = Path(self.pikoe_files['input'][2])
+        cnt_dir = Path(cnt_file).parent.resolve() 
+        
+        filename = self.pikoe_files[target_var][2] #relative to cnt 
+        full_output_path = (cnt_dir / filename).resolve() 
+                
+        with open(full_output_path,'r') as ff:
             txt = ff.read() 
         xxx = QDialog() 
         vbox = QVBoxLayout() 

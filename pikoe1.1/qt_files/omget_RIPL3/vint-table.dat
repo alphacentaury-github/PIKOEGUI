@@ -1,3 +1,3 @@
-Reference Number = 9401 Incident Particle: alpha    Target: Z= 20 A=  40 Ef = -6.084
+Reference Number = 9603 Incident Particle: alpha    Target: Z= 20 A=  40 Ef = -6.084
 En(MeV)   RealPot   RVolPot   RSurPot    VSOPot   DVolPot    DVolNonL  DVolSym    ImPot    ImVolPot   ImSurPot   WSOPot
-100.000   546.882   546.882     0.000     0.000     0.000     0.000     0.000   141.329   141.329     0.000     0.000
+100.000   270.799   270.799     0.000     0.000     0.000     0.000     0.000   291.386   291.386     0.000     0.000

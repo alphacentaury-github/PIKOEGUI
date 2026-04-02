@@ -51,7 +51,7 @@ L5 : ish ebind zsp asp betasp ictrm [i5,f10.0,f5.0,2f10.0,i5]
   ish=0       Depth (in MeV, >0) of s.p. pot. is specified by ebind.
      =1       Depth of s.p. pot. is changed to reproduce the binding energy
               given by ebind (in MeV, >0).
-     >9       S.p. wave function read from external file (unit # = ish)
+     >9       S.p. wave function read from external file (unit # = ish)                <<<< 
   ebind       Binding energy (in MeV, >0) of the struck nucleon (when ish=1 or ish>9)
               When ish=0 and ibmc=0, regarded as the depth (in MeV) of the central
               s.p. pot.
@@ -173,7 +173,7 @@ L17: ielm kibelm ionsh kinelm ielmedg [5i5]
               (unit # = kibelm) 
       =4      Free (on-shell) NN t-matrix read from external file (unit # = kibelm) 
               Available only when reaction is in coplanar (see below)
-  kibelm      Unit # of external file for elementary process (needed when ielm=3 or 4)
+  kibelm      Unit # of external file for elementary process (needed when ielm=3 or 4)   
   ionsh       Choice of on-shell approximation (needed when ielm=3 or 4)     
        =1     Final-state prescription
        =2     Initial-state prescription

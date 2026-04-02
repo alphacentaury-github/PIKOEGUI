@@ -160,17 +160,26 @@ class PIKOE_input:
       #---read input-----    
       self.data['COMMENT']= lines[i+3].rstrip() 
       
+      import re 
+      def get_total_width(fmt):
+          widths = re.findall(r'<(\d+)', fmt)
+          return sum(map(int, widths))
+      
       for ii,form in enumerate(format_table):
-          fmt_txt = form[0] 
-          var_list = form[1]
-          read_val = parse.parse(fmt_txt, lines[i+4+ii][:50].rstrip())
+          fmt_txt = form[0] # formats to read a line 
+          var_list = form[1] # list of variables to read 
+          width = get_total_width(fmt_txt)
+          line = lines[i+4+ii][:width] # truncate 
+          #----first check the number of words match 
+          #read_val = parse.parse(fmt_txt, lines[i+4+ii][:50].rstrip()) #strict format match
+          read_val = parse.search(fmt_txt, line) # match substring ignore extra text 
           if read_val is None:
               print(fmt_txt,var_list)
               print(lines[i+4+ii][:50].rstrip())
               raise ValueError(f'Parsing Error :{var_list} '+lines[i+4+ii][:50].rstrip())
           for jj, xx in enumerate(var_list):
               self.data[xx] = read_val[jj]
-      return 
+      return self.data 
     
 def run_pikoe_from_input_txt(pikoe_input_txt,
                               pikoe_path='../pikoe1.exe',   
