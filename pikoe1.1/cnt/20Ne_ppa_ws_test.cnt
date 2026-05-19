@@ -1,8 +1,8 @@
   **** p2p control data ****
-  10:unknown ::./tbl/20Ne_ppa_ws_tbl.dat
-  12:old     ::./elem/N4He_Mel_10-800MeV.dat
-  30:unknown ::./bs/20Ne_ppa_ws_bs.dat
-  06:unknown ::./outlist/20Ne_ppa_ws.outlist
+  10:unknown ::../tbl/20Ne_ppa_ws_tbl.dat
+  12:old     ::../elem/N4He_Mel_10-800MeV.dat
+  30:unknown ::../bs/20Ne_ppa_ws_bs.dat
+  06:unknown ::../outlist/20Ne_ppa_ws.outlist
  999:
 ---- INPUT ----
                                                   

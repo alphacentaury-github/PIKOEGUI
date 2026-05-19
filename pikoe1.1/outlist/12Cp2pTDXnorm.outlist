@@ -1,7 +1,7 @@
     11   old        ../elem/nnampFL.dat                               
     20   old        ../pot/EDAD1p12C_e.dat                            
     21   old        ../pot/EDAD1p11B_e.dat                            
-    22   old        ../pot/EDAD1p11B_e.dat                            
+    22   old        ../pot/EDAD1p12C_e.dat                            
      *****************************************************************
      *****                                                       *****
      *****                 program pikoe ver.1.0                 *****
@@ -71,7 +71,7 @@
         betvg  gamvg  (v <-- g)      :  0.669130747314E+00  0.134563295942E+01
 
    -- integrated value of the calculated TDX --
-               22.70 ub
+               20.33 ub
       (cf. NN total cross section:  25.31 mb)
 
-                                              >>> calculation completed (    22.047 sec)
+                                              >>> calculation completed (    21.813 sec)
