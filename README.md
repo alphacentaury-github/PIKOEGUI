@@ -10,6 +10,8 @@ provide
 In pikoe1.1/qt_files/ folder,  run "python3 qt_pikoe.py". 
 
 ## Requirements 
+0. Python3 environment. 
+   
 1. PIKOE executable is included in pikoe1.1/bin/ folder.
 In case of linux or other OS, one have to compile and configure for the executable location. 
 
