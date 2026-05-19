@@ -1,6 +1,9 @@
 # PIKOEGUI
 GUI of PIKOE code
 
+written by Young-Ho Song(IRIS) and Kazuki Yoshida(RCNP). 
+
+
 provide
 (1) User freindly interface and tooltips.
 (2) Simple plot tool for quick analysis. 
