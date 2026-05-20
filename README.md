@@ -25,4 +25,7 @@ Note: When loading/saving 'cnt' file directly,
       it is assumed that pikoe is executed at the location of cnt file. 
       (default: input 'cnt' file is located in ../cnt/ )
       In other words, the file path in the input must be relative to the cnt file location. 
-       
+
+##LICENSE
+                    GNU GENERAL PUBLIC LICENSE
+                       Version 3, 29 June 2007
