@@ -27,5 +27,4 @@ Note: When loading/saving 'cnt' file directly,
       In other words, the file path in the input must be relative to the cnt file location. 
 
 ##LICENSE
-                    GNU GENERAL PUBLIC LICENSE
-                       Version 3, 29 June 2007
+GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
